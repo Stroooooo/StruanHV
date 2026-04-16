@@ -36,7 +36,8 @@ public class ActiveDirectory {
         try {
             Hashtable<String, String> env = new Hashtable<>();
             env.put(Context.INITIAL_CONTEXT_FACTORY, "com.sun.jndi.ldap.LdapCtxFactory");
-            env.put(Context.PROVIDER_URL, AD_URL);
+            String ldapUrl = (AD_URL.startsWith("ldap://") || AD_URL.startsWith("ldaps://")) ? AD_URL : "ldap://" + AD_URL;
+            env.put(Context.PROVIDER_URL, ldapUrl);
             env.put(Context.SECURITY_AUTHENTICATION, "simple");
             env.put(Context.SECURITY_PRINCIPAL, username + "@" + DOMAIN);
             env.put(Context.SECURITY_CREDENTIALS, password);

@@ -138,17 +138,3 @@ services:
         condition: service_healthy
     restart: always
 
-  backend:
-    image: auth-backend
-    build:
-      context: ./auth
-      dockerfile: Dockerfile
-    volumes:
-        - .:/app
-    ports:
-      - "9999:9999"
-
-volumes:
-  isos:
-  configurations:
-  harddrives:

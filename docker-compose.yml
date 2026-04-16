@@ -81,12 +81,17 @@ services:
       - TOMCAT_CONNECTION_TIMEOUT=${TOMCAT_CONNECTION_TIMEOUT:-120000}
       - TOMCAT_MAX_THREADS=${TOMCAT_MAX_THREADS:-200}
       - TOMCAT_MIN_SPARE_THREADS=${TOMCAT_MIN_SPARE_THREADS:-10}
+    volumes:
+      - ${ISO_HOST_PATH:-./isos}:/host/isos:ro
+      - ${CONFIG_HOST_PATH:-./configurations}:/host/configurations:ro
+      - ${HARDDRIVES_HOST_PATH:-./harddrives}:/host/harddrives:ro
     restart: always
     healthcheck:
-      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:8080/actuator/health"]
+      test: ["CMD-SHELL", "curl -f http://localhost:8080/actuator/health || exit 1"]
       interval: 30s
       timeout: 10s
       retries: 3
+      start_period: 60s
 
   guacd:
     image: guacamole/guacd:latest

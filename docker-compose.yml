@@ -27,11 +27,6 @@ services:
       # Console (optional, defaults to wss://<current_host>/ws/)
       - NEXT_PUBLIC_GUACAMOLE_WS_URL=${NEXT_PUBLIC_GUACAMOLE_WS_URL:-}
     restart: always
-    healthcheck:
-      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:3000"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
 
   api:
     build: ./api
@@ -127,8 +122,6 @@ services:
       - ${SSL_CERT_PATH:-./nginx/fullchain.pem}:/etc/nginx/ssl/fullchain.pem:ro
       - ${SSL_KEY_PATH:-./nginx/privkey.pem}:/etc/nginx/ssl/privkey.pem:ro
     depends_on:
-      web:
-        condition: service_healthy
       api:
         condition: service_healthy
       guacamole-lite:

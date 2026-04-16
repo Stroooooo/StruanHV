@@ -1,6 +1,6 @@
 
 export const venv = {
-    SERVER: process.env.NEXT_PUBLIC_SERVER_URL,
+    SERVER: process.env.NEXT_PUBLIC_SERVER_URL || "http://localhost/api/v1",
 
     // Branding
     LOGO_URL: process.env.NEXT_PUBLIC_LOGO_URL || "https://github.com/Stroooooo/StudentHV/raw/main/assets/logo.png",

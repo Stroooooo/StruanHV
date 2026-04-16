@@ -1,0 +1,11 @@
+{
+  "name": "guacamole-lite-proxy",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "start": "node index.js"
+  },
+  "dependencies": {
+    "guacamole-lite": "^1.0.0"
+  }
+}

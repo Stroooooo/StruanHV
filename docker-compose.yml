@@ -1,0 +1,154 @@
+services:
+  web:
+    build: ./website
+    ports:
+      - "3000:3000"
+    environment:
+      # Server Configuration
+      - NEXT_PUBLIC_SERVER_URL=${NEXT_PUBLIC_SERVER_URL:-http://localhost/api/v1}
+      - NEXT_PUBLIC_DOMAIN=${NEXT_PUBLIC_DOMAIN:-localhost}
+
+      # Branding
+      - NEXT_PUBLIC_LOGO_URL=${NEXT_PUBLIC_LOGO_URL:-https://github.com/Stroooooo/StudentHV/raw/main/assets/logo.png}
+      - NEXT_PUBLIC_APP_NAME=${NEXT_PUBLIC_APP_NAME:-StudentHV}
+
+      # Colors (hex format)
+      - NEXT_PUBLIC_SIDEBAR_COLOR=${NEXT_PUBLIC_SIDEBAR_COLOR:-#532E80}
+      - NEXT_PUBLIC_SIDEBAR_TEXT_COLOR=${NEXT_PUBLIC_SIDEBAR_TEXT_COLOR:-#ffffff}
+      - NEXT_PUBLIC_SIDEBAR_BORDER_COLOR=${NEXT_PUBLIC_SIDEBAR_BORDER_COLOR:-#9ca3af}
+
+      # Login Page
+      - NEXT_PUBLIC_LOGIN_BACKGROUND_IMAGE=${NEXT_PUBLIC_LOGIN_BACKGROUND_IMAGE:-}
+      - NEXT_PUBLIC_LOGIN_CARD_IMAGE=${NEXT_PUBLIC_LOGIN_CARD_IMAGE:-https://images.pexels.com/photos/442150/pexels-photo-442150.jpeg}
+
+      # User Settings
+      - NEXT_PUBLIC_EMAIL_DOMAIN=${NEXT_PUBLIC_EMAIL_DOMAIN:-@example.com}
+
+      # Console (optional, defaults to wss://<current_host>/ws/)
+      - NEXT_PUBLIC_GUACAMOLE_WS_URL=${NEXT_PUBLIC_GUACAMOLE_WS_URL:-}
+    restart: always
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:3000"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  api:
+    build: ./api
+    ports:
+      - "8080:8080"
+    environment:
+      # JWT Configuration
+      - JWT_SECRET=${JWT_SECRET:-YourVeryLongAndSecureSecretKeyForJWTSigningThatShouldBeAtLeast32Characters}
+
+      # CORS Configuration
+      - CORS_AUTHORIZED=${CORS_AUTHORIZED:-http://localhost:3000,http://web:3000}
+
+      # WinRM Configuration
+      - WINRM_PORT=${WINRM_PORT:-5985}
+
+      # Shared Directories (paths inside container)
+      - ISO_DIRECTORY=${ISO_DIRECTORY:-/isos}
+      - CONFIGURATION_DIRECTORY=${CONFIGURATION_DIRECTORY:-/configurations}
+      - HARDDRIVES_DIRECTORY=${HARDDRIVES_DIRECTORY:-/harddrives}
+
+      # LDAP/Active Directory
+      - AD_URL=${AD_URL:-}
+      - AD_DN=${AD_DN:-}
+      - AD_ADMIN_GROUP=${AD_ADMIN_GROUP:-}
+
+      # Guacamole Secret (must be exactly 32 characters)
+      - GUACAMOLE_SECRET=${GUACAMOLE_SECRET:-ThisIsA32CharacterLongSecretKey!}
+
+      # Hyper-V Server 1 Configuration
+      - SERVER1_NAME=${SERVER1_NAME:-SERVER1}
+      - SERVER1_HOST=${SERVER1_HOST:-}
+      - SERVER1_USERNAME=${SERVER1_USERNAME:-}
+      - SERVER1_PASSWORD=${SERVER1_PASSWORD:-}
+      - SERVER1_CONSOLE_USERNAME=${SERVER1_CONSOLE_USERNAME:-}
+      - SERVER1_CONSOLE_PASSWORD=${SERVER1_CONSOLE_PASSWORD:-}
+
+      # Hyper-V Server 2 Configuration (optional)
+      - SERVER2_NAME=${SERVER2_NAME:-}
+      - SERVER2_HOST=${SERVER2_HOST:-}
+      - SERVER2_USERNAME=${SERVER2_USERNAME:-}
+      - SERVER2_PASSWORD=${SERVER2_PASSWORD:-}
+      - SERVER2_CONSOLE_USERNAME=${SERVER2_CONSOLE_USERNAME:-}
+      - SERVER2_CONSOLE_PASSWORD=${SERVER2_CONSOLE_PASSWORD:-}
+
+      # Performance Settings
+      - ASYNC_TIMEOUT=${ASYNC_TIMEOUT:-120000}
+      - TOMCAT_CONNECTION_TIMEOUT=${TOMCAT_CONNECTION_TIMEOUT:-120000}
+      - TOMCAT_MAX_THREADS=${TOMCAT_MAX_THREADS:-200}
+      - TOMCAT_MIN_SPARE_THREADS=${TOMCAT_MIN_SPARE_THREADS:-10}
+    volumes:
+      - ${ISO_HOST_PATH:-./isos}:/isos:ro
+      - ${CONFIG_HOST_PATH:-./configurations}:/configurations:ro
+      - ${HARDDRIVES_HOST_PATH:-./harddrives}:/harddrives:ro
+    restart: always
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:8080/actuator/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  guacd:
+    image: guacamole/guacd:latest
+    restart: always
+    healthcheck:
+      test: ["CMD", "nc", "-z", "localhost", "4822"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  guacamole-lite:
+    build: ./guacamole-lite
+    ports:
+      - "8081:8081"
+    environment:
+      - GUACD_HOST=guacd
+      - GUACD_PORT=4822
+      - GUACAMOLE_SECRET_KEY=${GUACAMOLE_SECRET:-ThisIsA32CharacterLongSecretKey!}
+      - LOG_LEVEL=${LOG_LEVEL:-NORMAL}
+    depends_on:
+      guacd:
+        condition: service_healthy
+    restart: always
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:8081"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  nginx:
+    image: nginx:alpine
+    ports:
+      - "${HTTP_PORT:-80}:80"
+      - "${HTTPS_PORT:-443}:443"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ${SSL_CERT_PATH:-./nginx/fullchain.pem}:/etc/nginx/ssl/fullchain.pem:ro
+      - ${SSL_KEY_PATH:-./nginx/privkey.pem}:/etc/nginx/ssl/privkey.pem:ro
+    depends_on:
+      web:
+        condition: service_healthy
+      api:
+        condition: service_healthy
+      guacamole-lite:
+        condition: service_healthy
+    restart: always
+
+  backend:
+    image: auth-backend
+    build:
+      context: ./auth
+      dockerfile: Dockerfile
+    volumes:
+        - .:/app
+    ports:
+      - "9999:9999"
+
+volumes:
+  isos:
+  configurations:
+  harddrives:

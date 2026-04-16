@@ -1,6 +1,20 @@
 services:
   web:
-    build: ./website
+    build:
+      context: ./website
+      args:
+        - NEXT_PUBLIC_SERVER_URL=${NEXT_PUBLIC_SERVER_URL:-http://localhost/api/v1}
+        - NEXT_PUBLIC_DOMAIN=${NEXT_PUBLIC_DOMAIN:-localhost}
+        - NEXT_PUBLIC_LOGO_URL=${NEXT_PUBLIC_LOGO_URL:-https://github.com/Stroooooo/StudentHV/raw/main/assets/logo.png}
+        - NEXT_PUBLIC_APP_NAME=${NEXT_PUBLIC_APP_NAME:-StudentHV}
+        - NEXT_PUBLIC_SIDEBAR_COLOR=${NEXT_PUBLIC_SIDEBAR_COLOR:-#532E80}
+        - NEXT_PUBLIC_SIDEBAR_TEXT_COLOR=${NEXT_PUBLIC_SIDEBAR_TEXT_COLOR:-#ffffff}
+        - NEXT_PUBLIC_SIDEBAR_BORDER_COLOR=${NEXT_PUBLIC_SIDEBAR_BORDER_COLOR:-#9ca3af}
+        - NEXT_PUBLIC_LOGIN_BACKGROUND_IMAGE=${NEXT_PUBLIC_LOGIN_BACKGROUND_IMAGE:-}
+        - NEXT_PUBLIC_LOGIN_CARD_IMAGE=${NEXT_PUBLIC_LOGIN_CARD_IMAGE:-https://images.pexels.com/photos/442150/pexels-photo-442150.jpeg}
+        - NEXT_PUBLIC_EMAIL_DOMAIN=${NEXT_PUBLIC_EMAIL_DOMAIN:-@example.com}
+        - NEXT_PUBLIC_GUACAMOLE_WS_URL=${NEXT_PUBLIC_GUACAMOLE_WS_URL:-}
+        - NEXT_PUBLIC_LOGIN_FIELD_LABEL=${NEXT_PUBLIC_LOGIN_FIELD_LABEL:-Student Number}
     ports:
       - "3000:3000"
     environment:

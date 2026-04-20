@@ -117,9 +117,6 @@ public class VMService {
         String trimmedVmName = vmName.trim();
         String escapedVmName = trimmedVmName.replace("'", "''");
         String escapedNetworkSwitchName = networkSwitchName != null ? networkSwitchName.replace("'", "''") : "";
-        String[] vmNameParts = trimmedVmName.split(" ");
-        String studentNumber = vmNameParts.length > 0 ? vmNameParts[0] : trimmedVmName;
-        String escapedStudentNumber = studentNumber.replace("'", "''");
         
         try {
             String cleanupCommand = String.format(
@@ -299,24 +296,4 @@ public class VMService {
         
         return powerShell.runPowerShell(command, server);
     }
-
-    // public void stopAllVMs() {
-    //     try {
-    //         String commandVh1 = "$ProgressPreference = 'SilentlyContinue'; " +
-    //                         "Get-VM | Where-Object {$_.State -eq 'Running'} | " +
-    //                         "ForEach-Object { Stop-VM -Name $_.Name -Force }; " +
-    //                         "Get-VM | Select-Object Name, State | ConvertTo-Json";
-            
-    //         powerShell.runPowerShell(commandVh1, "");
-
-    //         String commandserver = "$ProgressPreference = 'SilentlyContinue'; " +
-    //                         "Get-VM | Where-Object {$_.State -eq 'Running'} | " +
-    //                         "ForEach-Object { Stop-VM -Name $_.Name -Force }; " +
-    //                         "Get-VM | Select-Object Name, State | ConvertTo-Json";
-            
-    //         powerShell.runPowerShell(commandserver, true);
-    //     } catch (Exception e) {
-    //         System.err.println("Error stopping all VMs: " + e.getMessage());
-    //     }
-    // }
 }

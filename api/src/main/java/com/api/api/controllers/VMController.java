@@ -313,7 +313,7 @@ public class VMController {
 
                 TeamModel t = team.get();
                 String token = guacamoleToken.generateToken(
-                    t.getServerName(),
+                    t.getServerAddress(),
                     2179,
                     vmGuid,
                     t.getConsoleUsername(),

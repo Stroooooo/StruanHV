@@ -39,7 +39,13 @@ export function LoginForm({
         })
       })
 
-      return response.json()
+      const data = await response.json()
+
+      if (!response.ok) {
+        throw new Error("Password or username is wrong")
+      }
+
+      return data
     },
     onSuccess: (data) => {
       queryClient.refetchQueries({queryKey: ["auth"]})
@@ -111,6 +117,11 @@ export function LoginForm({
                 </div>
                 <Input id="password" name="password" type="password" required />
               </div>
+              {mutation.isError && (
+                <p className="text-sm text-destructive text-center">
+                  Password or username is wrong
+                </p>
+              )}
               <Button disabled={mutation.isPending} type="submit" className="w-full">
                 {
                   mutation.isPending ?
